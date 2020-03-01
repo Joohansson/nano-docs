@@ -115,6 +115,30 @@ $$
     }
     ```
 
+    **JavaScript (also react with npm)**
+    ```js
+    // using bigdecimal from https://github.com/iriscouch/bigdecimal.js
+    // var bigDec = require("bigdecimal") or import bigDec from 'bigdecimal'
+
+    // new difficulty from base difficulty (hexadecimal string) and a multiplier (float). Returns hex string
+    function from_multiplier(multiplier, base_difficulty) {
+      let big64 = bigDec.BigDecimal(2).pow(64)
+      let big_multiplier = bigDec.BigDecimal(multiplier)
+      let big_base = bigDec.BigDecimal(bigDec.BigInteger(base_difficulty,16))
+      let mode = bigDec.RoundingMode.HALF_DOWN()
+      return big64.subtract((big64.subtract(big_base).divide(big_multiplier,0,mode))).toBigInteger().toString(16)
+    }
+
+    // new multiplier from base difficulty (hexadecimal string) and target difficulty (hexadecimal string). Returns float
+    function to_multiplier(difficulty, base_difficulty) {
+      let big64 = bigDec.BigDecimal(2).pow(64)
+      let big_diff = bigDec.BigDecimal(bigDec.BigInteger(difficulty,16))
+      let big_base = bigDec.BigDecimal(bigDec.BigInteger(base_difficulty,16))
+      let mode = bigDec.RoundingMode.HALF_DOWN()
+      return parseFloat(big64.subtract(big_base).divide(big64.subtract(big_diff),10,mode).toString())
+    }
+    ```
+
 ---
 
 ## Account, Key, Seed and Wallet IDs
@@ -127,7 +151,7 @@ When dealing with the various IDs in the node it is important to understand the 
 ### Wallet ID
 This is a series of 32 random bytes of data and is **not the seed**. It is used in several RPC actions and command line options for the node. It is a **purely local** UUID that is a reference to a block of data about a specific wallet (set of seed/private keys/info about them) in your node's local database file.
 
-The reason this is necessary is because we want to store information about each account in a wallet: whether it's been used, what its account is so we don't have to generate it every time, its balance, etc. Also, so we can hold ad hoc accounts, which are accounts that are not derived from the seed. This identifier is only useful in conjunction with your node's database file and **it will not recover funds if that database is lost or corrupted**. 
+The reason this is necessary is because we want to store information about each account in a wallet: whether it's been used, what its account is so we don't have to generate it every time, its balance, etc. Also, so we can hold ad hoc accounts, which are accounts that are not derived from the seed. This identifier is only useful in conjunction with your node's database file and **it will not recover funds if that database is lost or corrupted**.
 
 This is the value that you get back when using the `wallet_create` etc RPC commands, and what the node expects for RPC commands with a `"wallet"` field as input.
 
@@ -169,8 +193,8 @@ $$
 $$
 
 !!! warning "Important"
-    
-    * All RPC commands expect units to be represented as $raw$. 
+
+    * All RPC commands expect units to be represented as $raw$.
     * Always keep units in integer $raw$ amounts to prevent any floating-point error or unit confusion.
     * Depending on your implementation language, you may require a big number library to perform arithmetic directly on $raw$.
     * See [Distribution and Units](/protocol-design/distribution-and-units/) page for more details on units.
@@ -245,7 +269,7 @@ For details on how to create individual blocks for sending from, receiving to, o
 
 Note: `amount` values should always be in RAW.
 
-Note: Please use `nano://` for deep links 
+Note: Please use `nano://` for deep links
 
 ### Send to an address
 
